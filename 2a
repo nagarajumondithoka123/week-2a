@@ -1,0 +1,246 @@
+Here is the Java code for Data Preprocessing and Association Rule Mining using Apriori in WEKA. It covers the Discretize, Resample, Remove, Normalize, and Apriori operations.
+
+## 1. Data preprocessing using Discretize filter
+
+This program converts numeric attributes into nominal intervals, which can then be used for association rule mining.
+
+java
+```
+
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Discretize;
+
+public class DiscretizeExample {
+    public static void main(String[] args) throws Exception {
+
+        // Load Iris dataset
+        DataSource source =
+            new DataSource("data/iris.arff");
+        Instances data = source.getDataSet();
+
+        // Create Discretize filter
+        Discretize filter = new Discretize();
+
+        // Use 3 bins for numeric attributes
+        filter.setBins(3);
+        filter.setInputFormat(data);
+
+        // Apply preprocessing
+        Instances newData =
+            Filter.useFilter(data, filter);
+
+        // Display results
+        System.out.println("Original Dataset:");
+        System.out.println(data);
+
+        System.out.println("Discretized Dataset:");
+        System.out.println(newData);
+
+        System.out.println("Preprocessing completed.");
+    }
+}
+```
+
+Output: Numeric attributes such as sepal length and petal width are converted into nominal intervals. The class attribute is retained.
+
+## 2. Association rule mining using Apriori
+
+This program loads the nominal weather dataset and generates association rules.
+
+java
+```
+
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.associations.Apriori;
+
+public class AprioriExample {
+    public static void main(String[] args) throws Exception {
+
+        // Load nominal weather dataset
+        DataSource source =
+            new DataSource("data/weather.nominal.arff");
+        Instances data = source.getDataSet();
+
+        // Create Apriori model
+        Apriori apriori = new Apriori();
+
+        // Set minimum support and confidence
+        apriori.setLowerBoundMinSupport(0.1);
+        apriori.setMinMetric(0.8);
+
+        // Set maximum number of rules
+        apriori.setNumRules(10);
+
+        // Build association rules
+        apriori.buildAssociations(data);
+
+        // Display generated rules
+        System.out.println("Association Rules:");
+        System.out.println(apriori);
+    }
+}
+```
+
+Output: The program displays frequent itemsets and association rules, with their support and confidence information.
+
+- Support: Frequency of an itemset in the dataset.
+- Confidence: How often the consequent occurs when the antecedent occurs.
+- Example rule: `outlook=overcast → play=yes`
+
+The actual rules depend on the dataset and the selected parameters.
+
+## 3. Combined program: Discretization + Apriori
+
+Use this program for numeric datasets such as `iris.arff` and `glass.arff`.
+
+java
+```
+
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Discretize;
+import weka.associations.Apriori;
+
+public class DiscretizeApriori {
+    public static void main(String[] args) throws Exception {
+
+        // Load dataset
+        DataSource source =
+            new DataSource("data/iris.arff");
+        Instances data = source.getDataSet();
+
+        // Discretize numeric attributes
+        Discretize discretize = new Discretize();
+        discretize.setBins(3);
+        discretize.setInputFormat(data);
+
+        Instances nominalData =
+            Filter.useFilter(data, discretize);
+
+        // Apply Apriori
+        Apriori apriori = new Apriori();
+        apriori.setLowerBoundMinSupport(0.1);
+        apriori.setMinMetric(0.8);
+        apriori.setNumRules(10);
+
+        apriori.buildAssociations(nominalData);
+
+        // Print results
+        System.out.println("Discretized data:");
+        System.out.println(nominalData);
+
+        System.out.println("Apriori Association Rules:");
+        System.out.println(apriori);
+    }
+}
+```
+
+## 4. Other preprocessing filters
+
+### A. Resample filter
+
+Creates a random sample of the dataset.
+
+java
+```
+
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.filters.Filter;
+import weka.filters.unsupervised.instance.Resample;
+
+public class ResampleExample {
+    public static void main(String[] args) throws Exception {
+        Instances data = new DataSource(
+            "data/iris.arff").getDataSet();
+
+        Resample filter = new Resample();
+        filter.setSampleSizePercent(50);
+        filter.setNoReplacement(true);
+        filter.setRandomSeed(1);
+        filter.setInputFormat(data);
+
+        Instances sampled =
+            Filter.useFilter(data, filter);
+
+        System.out.println("Original instances: "
+            + data.numInstances());
+        System.out.println("Sampled instances: "
+            + sampled.numInstances());
+    }
+}
+```
+
+### B. Remove filter
+
+Removes a specified attribute. For example, remove the fifth attribute.
+
+java
+```
+
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Remove;
+
+public class RemoveExample {
+    public static void main(String[] args) throws Exception {
+        Instances data = new DataSource(
+            "data/iris.arff").getDataSet();
+
+        Remove filter = new Remove();
+        filter.setAttributeIndices("5");
+        filter.setInputFormat(data);
+
+        Instances result =
+            Filter.useFilter(data, filter);
+
+        System.out.println(result);
+    }
+}
+```
+
+### C. Normalize filter
+
+Scales numeric attribute values to the range 0–1.
+
+java
+```
+
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Normalize;
+
+public class NormalizeExample {
+    public static void main(String[] args) throws Exception {
+        Instances data = new DataSource(
+            "data/iris.arff").getDataSet();
+
+        Normalize filter = new Normalize();
+        filter.setInputFormat(data);
+
+        Instances normalized =
+            Filter.useFilter(data, filter);
+
+        System.out.println(normalized);
+    }
+}
+```
+
+## 5. Summary
+
+| Program | Purpose |
+| --- | --- |
+| `DiscretizeExample` | Converts numeric values into nominal bins |
+| `AprioriExample` | Generates association rules from nominal data |
+| `DiscretizeApriori` | Performs discretization followed by Apriori |
+| `ResampleExample` | Creates a random subset |
+| `RemoveExample` | Removes selected attributes |
+| `NormalizeExample` | Scales numeric values |
+
+Important: Add the WEKA JAR to your Java project's classpath before running these programs. For association rule mining, start with `weather.nominal.arff` because its attributes are already nominal. For Iris and Glass, discretize the numeric attributes first.
